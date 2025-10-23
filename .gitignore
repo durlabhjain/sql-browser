@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.svelte-kit/
+.output/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Turso
+.turso/
+
+# SSL certificates (keep templates)
+docker/nginx/ssl/*.crt
+docker/nginx/ssl/*.key
+!docker/nginx/ssl/.gitkeep
+
+# PM2
+.pm2/

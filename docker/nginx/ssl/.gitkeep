@@ -1,0 +1,4 @@
+# SSL certificates will be stored here
+# Add your SSL certificate files:
+# - certificate.crt
+# - certificate.key
