@@ -111,15 +111,22 @@ PUBLIC_APP_NAME=SQL Browser
 PUBLIC_APP_VERSION=1.0.0
 ```
 
-## Step 3: Turso Database Setup
+## Step 3: Metadata Database Setup
 
-### Install Turso CLI
+SQL Browser supports three metadata database options:
+1. **Turso Cloud** - Recommended for cloud deployments
+2. **Local SQLite** - Recommended for development
+3. **MySQL** - Recommended for on-premise/offline deployments
+
+### Option A: Turso Cloud (Default)
+
+#### Install Turso CLI
 
 ```bash
 curl -sSfL https://get.tur.so/install.sh | bash
 ```
 
-### Create Database
+#### Create Database
 
 ```bash
 # Sign up / Login
@@ -137,13 +144,128 @@ turso db tokens create sql-browser-meta
 # Update backend/.env with these values
 ```
 
-### Initialize Database Schema
+#### Configure Environment
+
+```env
+DB_TYPE=turso
+TURSO_DB_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=<your-turso-auth-token>
+```
+
+#### Initialize Database Schema
 
 ```bash
 cd backend
 npm install
 npm run db:setup
 npm run db:seed
+```
+
+### Option B: Local SQLite
+
+Best for: Development, testing, single-server deployments
+
+```env
+DB_TYPE=turso
+TURSO_DB_URL=file:./local.db
+# No auth token needed
+```
+
+```bash
+cd backend
+npm install
+npm run db:setup
+npm run db:seed
+```
+
+### Option C: MySQL (On-Premise/Offline)
+
+Best for: Enterprise environments, air-gapped networks, existing MySQL infrastructure
+
+#### 1. Install and Configure MySQL
+
+```bash
+# Install MySQL Server
+sudo apt install mysql-server -y
+
+# Secure installation
+sudo mysql_secure_installation
+```
+
+#### 2. Create Database and User
+
+```sql
+# Connect to MySQL
+mysql -u root -p
+
+# Create database
+CREATE DATABASE sql_browser_metadata CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# Create user
+CREATE USER 'sqlbrowser'@'localhost' IDENTIFIED BY 'secure_password_here';
+GRANT ALL PRIVILEGES ON sql_browser_metadata.* TO 'sqlbrowser'@'localhost';
+FLUSH PRIVILEGES;
+
+# For remote access (if needed)
+CREATE USER 'sqlbrowser'@'%' IDENTIFIED BY 'secure_password_here';
+GRANT ALL PRIVILEGES ON sql_browser_metadata.* TO 'sqlbrowser'@'%';
+FLUSH PRIVILEGES;
+```
+
+#### 3. Configure Environment
+
+```env
+DB_TYPE=mysql
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=sqlbrowser
+MYSQL_PASSWORD=secure_password_here
+MYSQL_DATABASE=sql_browser_metadata
+```
+
+#### 4. Initialize Database Schema
+
+```bash
+cd backend
+npm install
+npm run db:setup
+npm run db:seed
+```
+
+#### 5. MySQL Production Best Practices
+
+**Enable SSL/TLS:**
+```bash
+mysql_ssl_rsa_setup --datadir=/var/lib/mysql
+```
+
+```sql
+ALTER USER 'sqlbrowser'@'%' REQUIRE SSL;
+```
+
+**Optimize MySQL Configuration** (`/etc/mysql/my.cnf`):
+```ini
+[mysqld]
+max_connections=150
+innodb_buffer_pool_size=1G
+innodb_log_file_size=256M
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+```
+
+**Set up Automated Backups:**
+```bash
+# Create backup script
+cat > /usr/local/bin/backup-sqlbrowser-db.sh << 'EOF'
+#!/bin/bash
+mysqldump -u sqlbrowser -p'secure_password_here' sql_browser_metadata > /backups/sql_browser_metadata_$(date +%Y%m%d_%H%M%S).sql
+find /backups -name "sql_browser_metadata_*.sql" -mtime +30 -delete
+EOF
+
+chmod +x /usr/local/bin/backup-sqlbrowser-db.sh
+
+# Add to crontab (daily at 2 AM)
+echo "0 2 * * * /usr/local/bin/backup-sqlbrowser-db.sh" | crontab -
 ```
 
 **⚠️ IMPORTANT**: After seeding, immediately change the default admin password!
@@ -273,6 +395,19 @@ turso db shell sql-browser-meta ".backup backup.db"
 0 2 * * * cd /path/to/backups && turso db shell sql-browser-meta ".backup backup-$(date +\%Y\%m\%d).db"
 ```
 
+#### MySQL Database Backup
+
+```bash
+# Manual backup
+mysqldump -u sqlbrowser -p sql_browser_metadata > backup_$(date +%Y%m%d).sql
+
+# Restore from backup
+mysql -u sqlbrowser -p sql_browser_metadata < backup_20250324.sql
+
+# Automated backup (already configured in Step 3 if using MySQL)
+# Backups stored in /backups/ with 30-day retention
+```
+
 #### Application Backup
 
 ```bash
@@ -328,11 +463,17 @@ frontend:
 
 ### Database Scaling
 
-Turso provides automatic scaling. For heavy loads:
+**For Turso:**
+- Automatic scaling included
+- Built-in replication to edge locations
+- Monitor query performance in Turso dashboard
 
-1. Consider Turso's replication features
-2. Monitor query performance
-3. Implement caching for frequently accessed data
+**For MySQL:**
+- Set up MySQL replication (master-slave or master-master)
+- Use read replicas for query-heavy workloads
+- Consider MySQL Group Replication or Galera Cluster for HA
+- Monitor query performance with slow query log
+- Implement connection pooling (already configured - 10 connections by default)
 
 ### Connection Pooling
 
@@ -401,12 +542,36 @@ docker-compose up -d --build
 
 ### Database connection issues
 
+**For Turso:**
 ```bash
 # Test Turso connection
 turso db shell sql-browser-meta "SELECT 1"
 
 # Check backend logs
 docker-compose logs backend
+```
+
+**For MySQL:**
+```bash
+# Test MySQL connection
+mysql -h localhost -u sqlbrowser -p sql_browser_metadata -e "SELECT 1"
+
+# Check MySQL is running
+sudo systemctl status mysql
+
+# Check MySQL logs
+sudo tail -f /var/log/mysql/error.log
+
+# Verify user permissions
+mysql -u root -p -e "SHOW GRANTS FOR 'sqlbrowser'@'localhost'"
+
+# Check connection pool status
+mysql -u root -p -e "SHOW PROCESSLIST"
+
+# Common fixes:
+# 1. Firewall: sudo ufw allow 3306
+# 2. Bind address: Check bind-address in /etc/mysql/mysql.conf.d/mysqld.cnf
+# 3. Restart MySQL: sudo systemctl restart mysql
 ```
 
 ### SSL certificate issues
