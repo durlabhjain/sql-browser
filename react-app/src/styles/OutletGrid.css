@@ -1,0 +1,185 @@
+.outlet-grid-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.outlet-grid__stats {
+  margin-bottom: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.outlet-grid__stats p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.outlet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .outlet-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .outlet-grid-container {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .outlet-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .outlet-grid-container {
+    padding: 12px;
+  }
+}
+
+/* Loading state */
+.outlet-grid__loading,
+.outlet-grid__error,
+.outlet-grid__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 32px;
+}
+
+.outlet-grid__loading p,
+.outlet-grid__empty p {
+  color: #666;
+  margin-top: 16px;
+}
+
+.outlet-grid__error {
+  color: #dc3545;
+}
+
+.outlet-grid__error h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+}
+
+.outlet-grid__error p {
+  color: #666;
+  margin: 0;
+}
+
+.outlet-grid__empty h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 20px;
+}
+
+/* Spinner animations */
+.spinner,
+.spinner-small {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0066cc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-small {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Infinite scroll observer */
+.outlet-grid__observer {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.outlet-grid__loading-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+}
+
+.outlet-grid__loading-more p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.outlet-grid__end {
+  text-align: center;
+  padding: 32px;
+  color: #999;
+}
+
+.outlet-grid__end p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .outlet-grid-container {
+    background: #1a1a1a;
+  }
+
+  .outlet-grid__stats {
+    border-bottom-color: #333;
+  }
+
+  .outlet-grid__stats p {
+    color: #999;
+  }
+
+  .outlet-grid__empty h3,
+  .outlet-grid__loading p,
+  .outlet-grid__loading-more p {
+    color: #ccc;
+  }
+
+  .outlet-grid__empty p {
+    color: #999;
+  }
+
+  .outlet-grid__error p {
+    color: #999;
+  }
+
+  .spinner,
+  .spinner-small {
+    border-color: #333;
+    border-top-color: #0066cc;
+  }
+
+  .outlet-grid__end {
+    color: #666;
+  }
+}
