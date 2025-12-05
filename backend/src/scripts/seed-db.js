@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { UserModel } from '../models/User.js';
+import { OutletModel } from '../models/Outlet.js';
 import logger from '../config/logger.js';
 import { ROLES } from '../config/roles.js';
 
@@ -47,6 +48,22 @@ async function seedDatabase() {
       isActive: true
     });
     logger.info(`✓ Analyst user created: ${analystUser.username}`);
+
+    // Seed sample outlets
+    logger.info('\nSeeding sample outlets...');
+    const sampleOutlets = [];
+
+    // Generate 100 sample outlets for demonstration
+    for (let i = 1; i <= 100; i++) {
+      sampleOutlets.push({
+        code: `OUT${String(i).padStart(4, '0')}`,
+        name: `Outlet ${i} - ${['Downtown', 'Uptown', 'Suburbs', 'Mall', 'Plaza'][i % 5]}`,
+        image: `https://picsum.photos/seed/outlet${i}/400/300`
+      });
+    }
+
+    await OutletModel.bulkCreate(sampleOutlets);
+    logger.info(`✓ ${sampleOutlets.length} sample outlets created`);
 
     logger.info('\nDatabase seeded successfully!');
     logger.info('\nDefault credentials:');

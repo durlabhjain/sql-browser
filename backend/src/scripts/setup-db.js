@@ -63,12 +63,27 @@ async function setupDatabase() {
     `);
     logger.info('✓ Query history table created');
 
+    // Create outlets table
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS outlets (
+        id TEXT PRIMARY KEY,
+        code TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        image TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    `);
+    logger.info('✓ Outlets table created');
+
     // Create indexes for better performance
     await db.execute('CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_query_history_user_id ON query_history(user_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_query_history_connection_id ON query_history(connection_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_query_history_created_at ON query_history(created_at)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_query_history_status ON query_history(status)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_outlets_code ON outlets(code)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_outlets_created_at ON outlets(created_at)');
     logger.info('✓ Indexes created');
 
     logger.info('Database setup completed successfully!');

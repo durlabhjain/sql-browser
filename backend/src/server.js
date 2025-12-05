@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.js';
 import queryRoutes from './routes/query.js';
 import adminRoutes from './routes/admin.js';
 import connectionRoutes from './routes/connections.js';
+import outletRoutes from './routes/outlets.js';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/query', queryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/connections', connectionRoutes);
+app.use('/api/outlets', outletRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
